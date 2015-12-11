@@ -1,0 +1,123 @@
+\documentclass[12pt,a4paper]{article}
+\usepackage[portuguese]{babel}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{makeidx}
+\usepackage{url}
+ \title{Documentação - Máquinas de Buscas}
+ \author{Fernando Barbosa Neto \and Jeferson de Oliveira Batista}
+ \date{20 de Setembro de 2015}
+\begin{document}
+ \maketitle
+ \newpage
+ 
+ \section{Introdução}
+ {\paragraph{} Este projeto tem como objetivo a implementação de máquinas de buscas. Estas máquinas de buscas serão baseadas em diferentes tipos de dados. }
+ {\paragraph{} Para as implementações das máquinas de buscas, serão utilizados modelos booleanos com Tabelas Hash, com tratamentos de colisões que serão detalhados nas próximas seções desta documentação, e Árvore B. }
+ {\paragraph{} O projeto está subdividido em dois módulos: um de indexação e outro de busca. Estes serão também explanados nas seções conseguintes. }
+ \newpage
+ 
+ \section{Implementação}  
+  {\paragraph{} As implementações utilizadas para as máquinas de buscas foram modelos booleanos com tabela hash, utilizando encadeamento, hashing linear e rehashing como métodos de tratamento de colisões, e com árvore B. Tais implementações serão explanadas nas subseções conseguintes.}
+  {\paragraph{} Visando uma busca mais rápida e eficiente, foram determinados módulos de indexação e de busca. Estes hão de ser detalhados sob a subseção 2.3 Formatação de Entrada e Saída.}
+  
+  \subsection{Tabela Hash}
+  {\paragraph{} A implementação das funções que são comuns a todos os tipos de hash estão presentes em \emph{encadeamento.c}.
+  Isso porque a forma de tratamento das colisões por encadeamento é a única que faz uso de uma lista encadeada nas chaves da tabela hash.
+  A função \emph{Hash* criarHash(int tam, int numDocs)} cria uma nova hash, recebendo como parâmetros a quantidade de chaves que a 
+  hash possui (tomamos o cuidado de que esse tamanho fosse sempre um número ímpar) e o número de documentos a serem indexados.
+  Uma função de espalhamento \emph{int hashing(Hash *hash, char *str)} é utilizada para se calcular em que posição da tabela hash
+  a palavra presente em \emph{char *str} deve ser armazenada a princípio, ou seja, caso não haja colisão. }
+  {\paragraph{} A função responsável por armazenar os dados contidos na hash em um arquivo de texto é a \emph{void indexarHash(Hash *hash, FILE *file, char **nomes)} 
+  onde \emph{file} é o arquivo onde os dados serão escritos e \emph{nomes} contém os nomes dos documentos. }
+  {\paragraph{} No módulo de busca, a função que remonta a hash escrita no módulo de indexação, é a \emph{Hash *montarHash(FILE *file, char ***nomes)}, 
+  onde \emph{file} é o arquivo de texto onde a hash foi escrita e \emph{nomes} é a variável responsável por armazenas os nomes dos documentos. }
+  {\paragraph{} As funções de inserção e busca na hash são específicas para cada forma de tratamento de colisão.}
+  
+   
+   \subsubsection{Tratamento de colisão por encadeamento}
+    {\paragraph{} Caso uma mesma posição na tabela hash seja calculada para várias palavras distintas, esse tipo de tratamento apenas armazenada
+    tais palavras em uma lista encadeada, no caso da inserção. No caso da busca, as palavras são procuradas em suas respectivas listas encadeadas.}
+   
+   \subsubsection{Tratamento de colisão por hashing linear}
+    {\paragraph{} No caso da hash linear, caso a posição calculada para uma palavra já esteja ocupada, a palavra simplesmente é
+    armazenada na próxima posição livre, utilizando-se para isso um incremento circular, isso, na inserção. Durante a busca, começa-se
+    a busca pela posição na tabela hash calculada para ela e segue-se a busca, com incremento circular, até que, ou a palavra seja
+    encontrada, ou uma posição vaga seja entrada (no caso da palavra não estar presente). }
+    
+   \subsubsection{Tratamento de colisão por rehashing}
+    {\paragraph{} Mecanisnos de inserção e busca semelhantes ao da hash linear são usados aqui, a diferença é que, ao invés do uso
+    de incremento circular, há uma nova função de hashing que calcula qual a próxima posição em que se deve tentar inserir a palavra,
+    ou qual a próxima posição em que ela deve ser buscada. Caso o tamanho de uma hash que utiliza rehashing não seja um número primo,
+    corre-se o risco da função de rehashing repetir a posição calculada, o que poderia levar a um ciclo infinito de tentativas de inserção.}
+    
+  \subsection{Árvore B}
+   {\paragraph{} Na implementação da Árvore B, temos a função \emph{ArvoreB *criarArvoreB(int numDocs)} para que uma nova árvore
+   seja criada. O inteiro \emph{numDocs} indica a quantidade de documentos a serem indexados. }
+   {\paragraph{} A função principal de inserção na Árvore B é a \emph{ArvoreB *insere\_ArvoreB(ArvoreB *raiz, Termo *t, int numDoc)}, que
+   faz uso de várias funções auxiliares para que a palavra presente em \emph{t} seja armazenada. O inteiro \emph{numDocs} indica
+   em que documento a palavra foi encontrada. }
+   {\paragraph{} Durante a indexação, a principal função utilizada para escrever os dados da Árvore B em um arquivo é a \emph{void indexarArvoreB(ArvoreB *arv, FILE *file, char **nomes)},
+   em que \emph{file} é o arquivo de texto onde a Árvore B será escrita e \emph{nomes} armazena os nomes dos documentos a serem
+   indexados. }
+   {\paragraph{} No módulo de busca, a função responsável por recriar a Árvore B é a \emph{ArvoreB *montarArvoreB(FILE *file, char ***nomes)},
+   onde \emph{file} é o arquivo onde os dados da Árvore B foram escritos e \emph{nomes} é a variável responsável por armazenar os nomes
+   dos documentos indexados. A busca é feita principalmente através da função \emph{void buscarArvoreB(ArvoreB *arv, char *str, char **nomes)}, 
+   onde \emph{str} armazena a palavra a ser buscada e \emph{nomes} os nomes dos documentos. }
+   
+  \subsection{Formatação de Entrada e Saída}
+   {\paragraph{} Há duas subdivisões, como mencionadas anteriormente, que são o Módulo de Indexação e o Módulo de Busca. Ambos os módulos possuem um \emph{Usage} genérico da forma \emph{./trab2 modulo tipoModelo arquivo1 arquivo2}, sendo utilizado em um terminal para a execução do programa. O \emph{modulo} definido no \emph{Usage} deve ser setado para \emph{-i}, no caso de módulo de indexação, ou \emph{-b}, no caso de módulo de busca. Este \emph{modulo} é manuseado no arquivo main.c, de forma a enviar os demais parâmetros para a função adequada, conforme o módulo desejado. Enquanto o \emph{tipoModelo} é o modelo utilizado para criar o índice, podendo ser \emph{E}, utilizando hash e tratamento de colisão por encadeamento, \emph{L} utilizando hash e tratamento de colisão por hashing linear, \emph{R}, utilizando hash e tratamento de colisão por rehashing, e \emph{B}, utilizando árvore B.}
+   {\paragraph{} Nas subseções abaixo serão explicadas especificamente cada um dos módulos, isto é, de indexação e de busca.}
+   
+   \subsubsection{Módulo de Indexação}
+    {\paragraph{} O módulo de indexação gesticula os parâmetros nos arquivos index.c e index.h a fim de determinar qual método será criado o índice. }
+    {\paragraph{} A função principal para determinar a criação dos índices é a com assinatura \emph{void modulo\_de\_indexacao(char tipoModelo[], char entradaDocs[], char indiceGerado[]);}. \emph{tipoModelo} indica qual modelo de hash ou árvore B será utilizado. \emph{entradaDocs} é o nome do arquivo que possui os nomes dos arquivos a serem indexados. Por sua vez o \emph{indiceGerado} é o nome do arquivo que terá o índice armazenado. }
+    {\paragraph{} Dentro da função \emph{modulo\_de\_indexacao}, são abertos os arquivos que contém os arquivos a serem lidos e o arquivo a ser escrito o índice. Para cada arquivo do primeiro, este é aberto e seu conteúdo é armazenado em uma árvore binária. O TAD árvore binária está definida em arvbin.c e arvbin.h. Observe que, através de uma expressão regular, somente as letras, acentuadas ou não, números e hífen são identificados como caracteres válidos de uma palavra. Os caracteres são todos passados para seus formatos em minúsculo, inclusive os acentuados, visto que os acentos não são removidos. Com a árvore binária preenchida com os conteúdos dos arquivos a serem indexados, uma cadeia de \emph{if}/\emph{else} determina qual será o método de indexação segundo o valor passado por \emph{tipoModelo}. }
+    {\paragraph{} O arquivo de índice é estruturado de forma que na primeira linha tenha-se o tamanho da hash (ou árvore B) seguido da quantidade de documentos indexado, os quais são imediatamente listados. Após isto, são listadas as palavras da seguinte maneira: na primeira linha há o número da posição na hash (ou árvore B), na segunda há a palavra e as posições nas quais ela foi encontrada e finalizando na terceira linha com uma \emph{flag} \emph{*end*}. }
+   
+   \subsubsection{Módulo de Busca}
+    {\paragraph{} O módulo de busca é tratado majoritariamente pelo arquivo busca.c com sua respectiva biblioteca busca.h.}
+    {\paragraph{} A função principal responsável pelas buscas é \emph{void modulo\_de\_busca(char tipoModelo[], char indice[], char arquivoBuscas[]);}, onde \emph{tipoModelo} indica qual modelo de hash ou árvore B será utilizado, \emph{indice} é o nome do arquivo com o índice armazenado e \emph{arquivoBuscas} é o nome do arquivo que contém as \emph{queries}.}
+    {\paragraph{} Uma seção de \emph{if}s e \emph{else}s identificam qual modelo de hash ou árvore B está sendo trabalhado. Identificado o modelo, uma expressão regular identifica a primeira palavra do arquivo de buscas. Caso o primeiro caracter não é aspa dupla, a expressão é direcionada para a respectiva função buscadora correspondente ao método utilizado (exemplo: função buscarLinHash para busca em Hash com hashing linear). Caso a expressão começa e termina por aspas duplas, as mesmas são removidas e enviadas para a mesma função do caso anterior. Caso comece mas não termine com aspas duplas, será utilizada a função \emph{void trataBufferAspas(char buffer[]);}, independente do método.}
+    {\paragraph{} A função trataBufferAspas realiza, com o apoio da função \emph{Palavra* buscarHashAspas(Hash *hash, char *str);} para buscar determinada palavra em uma hash ou árvore b, o seguinte processo: retira a aspa dupla da primeira palavra, caso esteja junto da palavra, ou pega a próxima palavra para, ao encontrar suas posições com buscarHashAspas, utilizar as posições como base de forma que as palavras seguintes tenho posições que imediatamente sucedem estas posições-base. A palavra que terminar com aspa dupla determina o fim da expressão da \emph{query} (neste caso também é removida a aspa). Terminada a análise da \emph{query}, busca-se quais documentos tiveram continuidade no encontro das palavras. Os documentos com busca bem-sucedida terão seus nomes enviados para stdout. }
+   
+  
+ \newpage
+ \section{Análise}	
+  {\paragraph{} Para medição e comparação dos tempos, foi utilizada a função \emph{time} do {\it bash} em um computador com a seguinte configuração: Notebook Dell Vostro 3460, com Sistema Operacional Ubuntu 15.04 64-bit, Memória de 5.7 GiB, processador Intel® Core™ i5-3230M CPU @ 2.60GHz x 4 e placa de vídeo GeForce GT 630M/PCIe/SSE2. No terminal foram rodados os seguintes comandos: \emph{time ./trab2 -i tipoModelo entradaDocs indice} para o módulo e indexação e \emph{time ./trab2 -b tipoModelo indice arquivoBuscas} para o módulo de busca, sendo que o tempo a ser avaliado é o de \emph{user}.}
+  {\paragraph{} A Tabela 1 disposta a seguir traz um comparativo para o caso de teste analisado. A lista dos documentos a serem indexados e as \emph{queries} podem ser encontrados nos arquivos entradaDocs e arquivoBuscas, respectivamente. Como há pouca diferença entre os tempos calculados, foram realizados ao menos dois testes para cada módulo, a fim de assegurar a precisão dos tempos de processamento.}
+  
+\begin{table}[!h]
+\centering
+\caption{Análise dos tempos}
+\label{my-label}
+\begin{tabular}{l|c|c|}
+\cline{2-3}
+                                              & \multicolumn{2}{c|}{Módulo} \\ \hline
+\multicolumn{1}{|l|}{Método}                  & Indexação      & Busca      \\ \hline
+\multicolumn{1}{|l|}{Hash com encadeamento}   & 1.734s              & 4.768s  \\ \hline
+\multicolumn{1}{|l|}{Hash com hashing linear} & 1.748s              & 4.780s  \\ \hline
+\multicolumn{1}{|l|}{Hash com rehashing}      & 1.810s              & 4.732s  \\ \hline
+\multicolumn{1}{|l|}{Árvore B}                & 1.836s              & 4.820s  \\ \hline
+\end{tabular}
+\end{table}
+
+{\paragraph{} A diferença relativa ao método mais veloz entre os tempos de indexação e de busca entre os extremos, isto é, o com maior tempo de processamento e o com menor, foi de 5,88\% e 1,86\%, respectivamente. }
+
+{\paragraph{} Apesar da proximidade dos resultados, merece destaque o modelo booleano com tabela hash utilizando tratamento de colisão por encadeamento, alcançando o menor tempo de indexação, e o com tabela hash fazendo uso de rehashing para tratamento de colisão, obtendo o menor tempo de busca. Entretanto, a confiabilidade não pode ser de fato assegurada pois os valores são deveras próximos, ora o pior deles pode obter tempo melhor que os demais, assim como o mais veloz pode se tornar o pior em outro momento. Portanto o desempenho a fins de comparação pode ter maior relação com o arranjo da cache do processador, por exemplo, do que o algoritmo em si.}
+
+{\paragraph{} A árvore B, apesar de ter se saído em algumas baterias de teste melhor que as tabelas hash, apresentou o pior desempenho no geral.}
+
+  
+ \newpage
+ \section{Conclusão}
+  {\paragraph{} Todas implementações apresentaram excelente desempenho, tanto em termos de indexação quanto de busca, apesar de uma díficil análise eficaz da velocidade dos métodos consequente da proximidade dos resultados. }
+   {\paragraph{} Os métodos apresentaram-se muito parecidos em termos de desenvolvimento, pois possuíam várias funções análogas e funcionamentos semelhantes. As maiores diferenças na etapa de criação do código eram entre a implementação da Árvore B com as Tabelas Hash, apesar de possuírem várias similaridades, especialmente nas funções específicas dos módulos de busca e indexação. }
+  {\paragraph{} É possível inferir que, independentemente da implementação escolhida, o usuário estará bem-servido. }
+ 
+ \newpage
+ \section{Bibliografia}
+  {\paragraph{} ZIVIANI, N. Projeto de Algoritmos, Cengage Learning.}
+  {\paragraph{} Aulas ministradas pela Prof\textsuperscript{\b a} Dr\textsuperscript{\b a} Mariella Berger na disciplina de Estrutura de Dados II da Universidade Federal do Espírito Santo entre os dias 26/08/2015 e 16/09/2015. }
+ 
+\end{document}
